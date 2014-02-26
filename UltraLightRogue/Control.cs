@@ -10,51 +10,44 @@ namespace UltraLightRogue
 {
     class Control
     {
+		private bool gameEnd;
+
 		private Map currentMap;
 		private Player player;
 		private ArrayList textBox;
 
 		private static Random rand;
 
-		private static String[] materials = {"Paper", "Plywood", "Oak", "Copper", "Rusty", "Bronze", "Iron", "Steel", "Wootz Steel",
+		public static String[] materials = {"Glass", "Plywood", "Oak", "Stone", "Copper", "Rusty", "Bronze", "Iron", "Steel", "Wootz Steel",
 			"Titanium", "Mithril", "Adamantium", "Meteorite", "Starmetal", "Unobtainium", "Infinium"};
 
-		private static String[] weapons = {"Broadsword", "Longsword", "Greatsword", "Scimitar", "Shortsword", "Halberd", "Pike", "Spear", "Voulge",
+		public static String[] weapons = {"Broadsword", "Longsword", "Greatsword", "Scimitar", "Shortsword", "Halberd", "Pike", "Spear", "Voulge",
 			"Club", "Mace", "Warhammer", "Flail", "Hatchet", "Waraxe", "Battleaxe", "Warpick"};
 
-		private static String[] armors = { "Chain Shirt", "Chainmail", "Chestguard", "Breastplate", "Halfplate", "Fullplate", "Brigandine", "Scale Mail", "Fieldplate" };
+		public static String[] armors = { "Chain Shirt", "Chainmail", "Chestguard", "Breastplate", "Halfplate", "Fullplate", "Brigandine", "Scale Mail", "Fieldplate" };
 
         public Control()
         {
+			gameEnd = false;
+
 			rand = new Random();
 
 			currentMap = new Map("The Great Testing Map", 1);
-			currentMap.setItem(5, 5, generateItem(0));
-			currentMap.setItem(7, 5, generateItem(0));
-			currentMap.setItem(9, 5, generateItem(0));
-			currentMap.setItem(11, 5, generateItem(0));
-			currentMap.setItem(13, 5, generateItem(0));
-			currentMap.setItem(15, 5, generateItem(0));
-			currentMap.setItem(17, 5, generateItem(0));
-			currentMap.setItem(19, 5, generateItem(0));
-			currentMap.setItem(21, 5, generateItem(0));
-			currentMap.setItem(23, 5, generateItem(0));
 
-			int mat1 = rand.Next(0, 2);
-			int mat2 = rand.Next(0, 2);
-			player = new Player(new Item(materials[mat1] + " " + weapons[rand.Next(0, weapons.Length)], mat1 + 1, true, false, false, false), new Item(materials[mat2] + " " + armors[rand.Next(0, armors.Length)], mat2 + 1, false, true, false, false), Classes.Armsman);
+			player = new Player(new Item(materials[0] + " " + weapons[rand.Next(0, weapons.Length)], 1, true, false, false, false), new Item(materials[0] + " " + armors[rand.Next(0, armors.Length)], 1, false, true, false, false), Classes.Armsman);
 
 			textBox = new ArrayList();
         }
 
         public void run()
         {
-            while (!TCODConsole.isWindowClosed())
+            while (!TCODConsole.isWindowClosed() && !gameEnd)
             {
 				draw();
 				input();
 				process();
             }
+			end();
         }
 
         private void draw()
@@ -109,7 +102,7 @@ namespace UltraLightRogue
 						}
 						else if (currentMap.getItem(x, y).getIsArmor())
 						{
-							TCODConsole.root.setForegroundColor(TCODColor.blue);
+							TCODConsole.root.setForegroundColor(TCODColor.azure);
 							TCODConsole.root.print(x, y, "a");
 						}
 						else if (currentMap.getItem(x, y).getIsPotion())
@@ -494,16 +487,11 @@ namespace UltraLightRogue
 
         private void process()
         {
-			if (player.endRoundCheck())
+			Monster tmp = currentMap.checkMonsterHealth();
+			if (tmp != null)
 			{
-				textBox.Add("You have gained a level, " + player.getName() + "'s stats have been increased");
-			}
-
-			String tmp = currentMap.checkMonsterHealth();
-			if (tmp.Length != 0)
-			{
-				player.addXP(currentMap.getLevel());
-				textBox.Add(tmp);
+				player.addXP(tmp.getLevel());
+				textBox.Add(tmp.getName() + " falls to your might!");
 			}
 
 			for (int i = 0; i < currentMap.getMonsters().Length; i++ )
@@ -516,7 +504,16 @@ namespace UltraLightRogue
 				}
 			}
 			
+			if (player.endRoundCheck())
+			{
+				textBox.Add("You have gained a level, " + player.getName() + "'s stats have been increased");
+			}
 
+			if (player.getNowHP() <= 0)
+			{
+				gameEnd = true;
+			}
+			
         }
 
 		private Item generateItem(int monsterLevel)
@@ -562,7 +559,7 @@ namespace UltraLightRogue
 			int result = rand.Next(1, 100);
 			if (result < chance)
 			{
-				int variation = rand.Next(1, 3);
+				int variation = rand.Next(1, 4);
 				int damage = (1 + (player.getWeapon().getQuality()) * variation);
 				damage -= monster.getAC();
 				if (damage > 0)
@@ -608,6 +605,13 @@ namespace UltraLightRogue
 				textBox.Add(player.getName() + " dodges " + monster.getName() + "'s attack");
 				return 0;
 			}
+		}
+		private void end(){
+			TCODConsole.root.clear();
+			TCODConsole.root.setForegroundColor(TCODColor.red);
+			TCODConsole.root.print(35, 25, "You died");
+			TCODConsole.flush();
+			TCODConsole.waitForKeypress(true);
 		}
     }
 }

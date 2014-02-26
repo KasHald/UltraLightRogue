@@ -31,7 +31,11 @@ namespace UltraLightRogue
 		private bool miniboss;
 		private bool finalboss;
 
-		public Monster(AIType ai, int x, int y, String name, int level, TCODColor color, char c, bool miniboss, bool finalboss)
+		private bool walk;		// Whether it may act the next turn
+		private int speed;		// The speed of the monster, 4 means acting every frame, 1 every fourth frame
+		private int counter;
+
+		public Monster(AIType ai, int x, int y, String name, int level, TCODColor color, char c, bool miniboss, bool finalboss, int toHit, int damage, int health, int AC, int dodge, int speed)
 		{
 			this.x = x;
 			this.y = y;
@@ -45,14 +49,18 @@ namespace UltraLightRogue
 			this.color = color;
 			this.c = c;
 
-			this.toHit = 60;
-			this.damage = 3;
-			this.health = 5;
-			this.AC = 1;
-			this.dodge = 10;
+			this.toHit = toHit;
+			this.damage = damage;
+			this.health = health;
+			this.AC = AC;
+			this.dodge = dodge;
 			
 			this.miniboss = miniboss;
 			this.finalboss = finalboss;
+
+			this.speed = speed;
+			this.walk = true;
+			this.counter = 4;
 		}
 
 		public void setX(int newX)
@@ -156,66 +164,78 @@ namespace UltraLightRogue
 
 		public bool moveAI(int plaX, int plaY, TCODMap map)
 		{
-			switch (ai)
+			counter = counter - speed;
+			if (counter <= 0)
 			{
-				case AIType.unmoveable:
-					return checkAttack(plaX, plaY);
-				case AIType.forgetful:
-					path = new TCODPath(map);
-					path.compute(x, y, plaX, plaY);
-					if (path.size() < 5 && path.size() > 1)
-					{
-						path.walk(ref x, ref y, false);
-						return false;
-					}
-					else
-					{
+				walk = true;
+				counter = counter + 4;
+			}
+			
+			if (walk)
+			{	
+				walk = false;
+				switch (ai)
+				{
+					case AIType.unmoveable:
 						return checkAttack(plaX, plaY);
-					}
-				case AIType.guard:
-					TCODPath tmpPath = new TCODPath(map);
-					tmpPath.compute(x, y, origX, origY);
-
-					path = new TCODPath(map);
-					path.compute(x, y, plaX, plaY);
-					if (path.size() < 5 && path.size() > 1 && tmpPath.size() < 3)
-					{
-						path.walk(ref x, ref y, false);
-						return false;
-					}
-					else if (path.size() == 1)
-					{
-						return checkAttack(plaX, plaY);
-					}
-					else
-					{
-						tmpPath.walk(ref x, ref y, false);
-						return false;
-					}
-				case AIType.warrior:
-					path = new TCODPath(map);
-					path.compute(x, y, plaX, plaY);
-					if (path.size() < 8 && path.size() > 1)
-					{
-						path.walk(ref x, ref y, false);
-						return false;
-					}
-					else
-					{
-						return checkAttack(plaX, plaY);
-					}
-				case AIType.psycho:
-					path = new TCODPath(map);
-					path.compute(x, y, plaX, plaY);
-					if (path.size() > 1)
-					{
-						path.walk(ref x, ref y, false);
-						return false;
-					}
-					else
-					{
-						return checkAttack(plaX, plaY);
-					}
+					case AIType.forgetful:
+						path = new TCODPath(map);
+						path.compute(x, y, plaX, plaY);
+						if (path.size() < 5 && path.size() > 1)
+						{
+							path.walk(ref x, ref y, false);
+							return false;
+						}
+						else
+						{
+							return checkAttack(plaX, plaY);
+						}
+					case AIType.guard:
+						TCODPath tmpPath = new TCODPath(map);
+						tmpPath.compute(x, y, origX, origY);
+							
+						path = new TCODPath(map);
+						path.compute(x, y, plaX, plaY);
+						if (path.size() < 5 && path.size() > 1 && tmpPath.size() < 3)
+						{
+							path.walk(ref x, ref y, false);
+							return false;
+						}
+						else if (path.size() == 1)
+						{
+							return checkAttack(plaX, plaY);
+						}
+						else
+						{
+							tmpPath.walk(ref x, ref y, false);
+							return false;
+						}
+					case AIType.warrior:
+						path = new TCODPath(map);
+						path.compute(x, y, plaX, plaY);
+						if (path.size() < 8 && path.size() > 1)
+						{
+							path.walk(ref x, ref y, false);
+							return false;
+						}
+						else
+						{
+							return checkAttack(plaX, plaY);
+						}
+					case AIType.psycho:
+						path = new TCODPath(map);
+						path.compute(x, y, plaX, plaY);
+						if (path.size() > 1)
+						{
+							path.walk(ref x, ref y, false);
+							return false;
+						}
+						else
+						{
+							return checkAttack(plaX, plaY);
+						}
+				}
+				return false;
 			}
 			return false;
 		}

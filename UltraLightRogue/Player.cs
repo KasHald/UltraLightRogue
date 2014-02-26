@@ -38,8 +38,8 @@ namespace UltraLightRogue
 			this.playerX = 1;
 			this.playerY = 1;
 
-			this.playerColor = TCODColor.crimson;
-			this.playerChar = 'B';
+			this.playerColor = TCODColor.magenta;
+			this.playerChar = '@';
 
 			this.weapon = weapon;
 			this.armor = armor;
@@ -128,6 +128,7 @@ namespace UltraLightRogue
 
 		private void levelUp()
 		{
+			level++;
 			switch (pcClass)
 			{
 				case Classes.Acrobat:
