@@ -26,13 +26,22 @@ namespace UltraLightRogue
 
 		public static String[] armors = { "Chain Shirt", "Chainmail", "Chestguard", "Breastplate", "Halfplate", "Fullplate", "Brigandine", "Scale Mail", "Fieldplate" };
 
+		public static String[] realmStarts = { "Ug", "Xyl", "Nas", "Qve", "Pra", "Vus", "Znul", "Cri", "Svart", "Nif", "Cryk", "Fir", "Snim", "Rit", "Haf", "Tul", "Kris", "Xzir" };
+
+		public static String[] realmNames = { "nam", "los", "hur", "nam", "tok", "fos", "stryk", "nir", "mon", "sae", "vars", "znek", "nok", "corm", "heim", "dal", "wuld", "strat" };
+
+		public static String[] realmTypes = { "Land", "Realm", "Valley", "Kingdom", "Waste", "Plane", "Abyss", "Pit"};
+
+		public static String[] realmTitles = { "Emptiness", "Despair", "Savagery", "Madness", "Eternal War", "Slaughter", "The Dead", "Deceit", 
+												 "Torture", "Suffering", "Giants", "The War Machine", "Doom", "The Gods" , ""};
+
         public Control()
         {
 			gameEnd = false;
 
 			rand = new Random();
 
-			currentMap = new Map("The Great Testing Map", 1);
+			currentMap = new Map(realmStarts[rand.Next(0, realmStarts.Length)] + realmNames[rand.Next(0, realmNames.Length)] + realmNames[rand.Next(0, realmNames.Length)] + ", The " + realmTypes[rand.Next(0, realmTypes.Length)] + " of " + realmTitles[0],  1); ;
 
 			player = new Player(new Item(materials[0] + " " + weapons[rand.Next(0, weapons.Length)], 1, true, false, false, false), new Item(materials[0] + " " + armors[rand.Next(0, armors.Length)], 1, false, true, false, false), Classes.Armsman);
 
@@ -112,6 +121,12 @@ namespace UltraLightRogue
 						}
 					}
 				}
+			}
+
+			if (currentMap.getInFOV(currentMap.getTransision().getX(), currentMap.getTransision().getY()))
+			{
+				TCODConsole.root.setForegroundColor(currentMap.getTransision().getColor());
+				TCODConsole.root.print(currentMap.getTransision().getX(), currentMap.getTransision().getY(), currentMap.getTransision().getC() + "");
 			}
 		}
 
@@ -204,6 +219,11 @@ namespace UltraLightRogue
 					return TCODColor.white;
 				}
 			}
+			else if (currentMap.getTransision().getX() == player.getPlayerX() && currentMap.getTransision().getY() == player.getPlayerY())
+			{
+				return TCODColor.white;
+			}
+
 			return TCODColor.grey;
 		}
 
@@ -478,6 +498,17 @@ namespace UltraLightRogue
 										moveon = true;
 									}
 								}
+								else if (currentMap.getTransision().getX() == player.getPlayerX() && currentMap.getTransision().getY() == player.getPlayerY())
+								{
+									textBox.Add("You transport yourself into another realm");
+
+									Map tmp = new Map(realmStarts[rand.Next(0, realmStarts.Length)] + realmNames[rand.Next(0, realmNames.Length)] + realmNames[rand.Next(0, realmNames.Length)] + ", The " + realmTypes[rand.Next(0, realmTypes.Length)] + " of " + realmTitles[currentMap.getLevel()], currentMap.getLevel() + 1);
+									
+									currentMap = tmp;
+									player.setPlayerX(rand.Next(1, 44));
+									player.setPlayerY(rand.Next(1, 39));
+									moveon = true;
+								}
 								break;
 						}
 						break;
@@ -550,6 +581,10 @@ namespace UltraLightRogue
 				}
 				return currentMap.getItem(player.getPlayerX(), player.getPlayerY()).getName();
 			}
+			else if (currentMap.getTransision().getX() == player.getPlayerX() && currentMap.getTransision().getY() == player.getPlayerY())
+			{
+				return currentMap.getTransision().getName();
+			}
 			return "-";
 		}
 
@@ -606,6 +641,7 @@ namespace UltraLightRogue
 				return 0;
 			}
 		}
+
 		private void end(){
 			TCODConsole.root.clear();
 			TCODConsole.root.setForegroundColor(TCODColor.red);

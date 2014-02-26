@@ -16,6 +16,8 @@ namespace UltraLightRogue
 		private TCODMap tcodMap;
 		private ArrayList monsters;
 		private int level;
+		private Transision trans;
+		private Monster boss;
 
 		private static Random rand;
 
@@ -43,6 +45,8 @@ namespace UltraLightRogue
 			generateTCODMap();
 			generateMonsters();
 			generateItems();
+
+			this.trans = new Transision(rand.Next(1, 44), rand.Next(1 , 39));
 		}
 
 		private void generateTerrainMap()
@@ -83,25 +87,27 @@ namespace UltraLightRogue
 
 		private void generateMonsters()
 		{
+			int type = rand.Next(0,3);
+
 			for (int i = 0; i < 10; i++)
 			{
-				int chance = rand.Next(1, monsterNames.Length + 1);
+				int chance = rand.Next(1 + type, 4 + type);
 				switch (chance)
 				{
 					case 1:
 						makeZombie();
 						break;
 					case 2:
-						makeBlademaster();
+						makeFiend();
 						break;
 					case 3:
-						makeFiend();
+						makeOrc();
 						break;
 					case 4:
 						makeHenchman();
 						break;
 					case 5:
-						makeOrc();
+						makeBlademaster();
 						break;
 				}
 			}
@@ -332,6 +338,11 @@ namespace UltraLightRogue
 		public int getLevel()
 		{
 			return level;
+		}
+
+		public Transision getTransision()
+		{
+			return trans;
 		}
 
 		public Monster checkMonsterHealth()
